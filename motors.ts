@@ -32,7 +32,7 @@ namespace CodingPirates {
      * by 'dir', at the requested 'power' 
 	 * @param motor which motor to turn on
 	 * @param dir   which direction to go
-	 * @param power how much power to send to the motor
+	 * @param power how much power to send to the motor eg: 75
      */
     //% subcategory=MotorDriver
     //% blockId=cp_motordriver_motor_on
@@ -40,23 +40,29 @@ namespace CodingPirates {
     //% power.min=0 power.max=100
     export function motorOn(motor: Motors, dir: MotorDirection, power: number): void {
         /*Map 0-100 to 0-1024*/
-        let OutputVal = (Math.clamp(0, 100, power) * 1023)/100;
-		OutputVal = Math.clamp(0, 1023, OutputVal);
+        let pwmVal = (Math.clamp(0, 100, power) * 1023)/100;
+		pwmVal = Math.clamp(0, 1023, pwmVal);
+		_motorOn(motor, dir, pwmVal);
+    }
+	
+	export function _motorOn(motor: Motors, dir: MotorDirection, pwmVal: number): void {
+		pwmVal = Math.clamp(0, 1023, pwmVal);
 		if(dir == MotorDirection.Reverse)
 		{
-			OutputVal = 1023 - OutputVal;
+			pwmVal = 1023 - pwmVal;
 		}
         switch (motor) {
             case Motors.MotorA:
-				pins.analogWritePin(motorA1, OutputVal);
+				pins.analogWritePin(motorA1, pwmVal);
 				pins.digitalWritePin(motorA2, dir);
                 break;
             case Motors.MotorB:
-				pins.analogWritePin(motorB1, OutputVal);
+				pins.analogWritePin(motorB1, pwmVal);
 				pins.digitalWritePin(motorB2, dir);
                 break;
         }
     }
+	
 	/**
      * Turns off the motor specified by eMotors
      * @param motor :which motor to turn off
