@@ -59,7 +59,7 @@ namespace CodingPirates {
     //% blockId=cp_steering_turn_right
     //% block="Turn right  %angle |degrees"
     export function turnRight(angle: number):void {
-		let encStopPos = Math.abs(angle); // Convert degree to encoder pulses.
+		let encStopPos = Math.abs(angle*620)/1000; // Convert degree to encoder pulses.
 		let dirA = MotorDirection.Forward;
 		let dirB = MotorDirection.Reverse;
 		if(angle < 0){ // Swap A and B direction.
