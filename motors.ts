@@ -2,6 +2,14 @@ namespace CodingPirates {
 	/************************************************************************************************************************************************
 	* micro:bit motor driver blocks 
 	************************************************************************************************************************************************/
+		
+	/*Default pins */
+	let motorA1 = AnalogPin.P0;
+	let motorA2 = DigitalPin.P16;
+	
+	let motorB1 = AnalogPin.P12;
+	let motorB2 = DigitalPin.P8;
+	
     /*Note that Forward and reverse are slightly arbitrary, as it depends on how the motor is wired...*/
     export enum MotorDirection {
         //% block="forward"
@@ -11,56 +19,41 @@ namespace CodingPirates {
     }
 
     export enum Motors {
-        //%blockId=cp_motordriver_motor_one
-        //% block="motor 1"
-        Motor1,
-        //%blockId=cp_motordriver_motor_two
-        //% block="motor 2"
-        Motor2
+        //%blockId=cp_motordriver_motor_A
+        //% block="motor A"
+        MotorA,
+        //%blockId=cp_motordriver_motor_B
+        //% block="motor B"
+        MotorB
     }
 
 	/**
-     * Turns on motor specified by eMotors in the direction specified
-     * by eDirection, at the requested speed 
-     *
+     * Turns on 'motor' in the direction specified
+     * by 'dir', at the requested 'power' 
 	 * @param motor which motor to turn on
 	 * @param dir   which direction to go
-	 * @param speed how fast to spin the motor
+	 * @param power how much power to send to the motor
      */
     //% subcategory=MotorDriver
     //% blockId=cp_motordriver_motor_on
-    //% block="%motor|on direction %dir|speed %speed"
-    //% speed.min=0 speed.max=100
-    export function motorOn(motor: Motors, dir: MotorDirection, speed: number): void {
-        /*first convert 0-100 to 0-1024 (approx) We wont worry about the lsat 24 to make life simpler*/
-        let OutputVal = Math.clamp(0, 100, speed) * 10;
-
+    //% block="Run %motor|in direction %dir|with power %power"
+    //% power.min=0 power.max=100
+    export function motorOn(motor: Motors, dir: MotorDirection, power: number): void {
+        /*Map 0-100 to 0-1024*/
+        let OutputVal = (Math.clamp(0, 100, power) * 1023)/100;
+		OutputVal = Math.clamp(0, 1023, OutputVal);
+		if(dir == MotorDirection.Reverse)
+		{
+			OutputVal = 1023 - OutputVal;
+		}
         switch (motor) {
-            case Motors.Motor1: /*Motor 1 uses Pins 8 and 12*/
-                switch (dir) {
-                    case MotorDirection.Forward:
-                        pins.analogWritePin(AnalogPin.P8, OutputVal);
-                        pins.digitalWritePin(DigitalPin.P12, 0); /*Write the low side digitally, to allow the 3rd PWM to be used if required elsewhere*/
-                        break
-                    case MotorDirection.Reverse:
-                        pins.analogWritePin(AnalogPin.P12, OutputVal);
-                        pins.digitalWritePin(DigitalPin.P8, 0);
-                        break
-                }
-
+            case Motors.MotorA:
+				pins.analogWritePin(motorA1, OutputVal);
+				pins.digitalWritePin(motorA2, dir);
                 break;
-            case Motors.Motor2: /*Motor 2 uses Pins 0 and 16*/
-                switch (dir) {
-                    case MotorDirection.Forward:
-                        pins.analogWritePin(AnalogPin.P0, OutputVal);
-                        pins.digitalWritePin(DigitalPin.P16, 0); /*Write the low side digitally, to allow the 3rd PWM to be used if required elsewhere*/
-                        break
-                    case MotorDirection.Reverse:
-                        pins.analogWritePin(AnalogPin.P16, OutputVal);
-                        pins.digitalWritePin(DigitalPin.P0, 0);
-                        break
-                }
-
+            case Motors.MotorB:
+				pins.analogWritePin(motorB1, OutputVal);
+				pins.digitalWritePin(motorB2, dir);
                 break;
         }
     }
@@ -68,18 +61,43 @@ namespace CodingPirates {
      * Turns off the motor specified by eMotors
      * @param motor :which motor to turn off
      */
-    //%subcategory=MotorDriver
+    //% subcategory=MotorDriver
     //% blockId=cp_motordriver_motor_off
-    //%block="turn off %motor"
+    //% block="turn off %motor"
     export function motorOff(motor: Motors): void {
         switch (motor) {
-            case Motors.Motor1:
-                pins.digitalWritePin(DigitalPin.P8, 0);
-                pins.digitalWritePin(DigitalPin.P12, 0);
+            case Motors.MotorA:
+                pins.analogWritePin(motorA1, 0);
+                pins.digitalWritePin(motorA2, 0);
                 break
-            case Motors.Motor2:
-                pins.digitalWritePin(DigitalPin.P0, 0);
-                pins.digitalWritePin(DigitalPin.P16, 0);
+            case Motors.MotorB:
+                pins.analogWritePin(motorB1, 0);
+                pins.digitalWritePin(motorB2, 0);
+                break
+        }
+    }
+	
+	/**
+     * Configure which pins to use for the specified motor.
+     * @param motor which motor to configure, eg: MotorA
+     * @param pin1 the analog pin used for PWM, eg: AnalogPin.P0
+     * @param pin2 the digital pin used for directions eg:DigitalPin.P16
+     */
+    //% subcategory=MotorDriver
+    //% blockId=cp_motordriver_configuration
+    //% block="Configure %motor | pin1 %pin1 |pin2 %pin2" 
+    export function motorConfiguation(motor: Motors, pin1: AnalogPin, pin2: DigitalPin): void {
+		const pwmPeriod = 1000; // 1000 usec ~ 1kHz
+        switch (motor) {
+            case Motors.MotorA:
+				motorA1 = pin1;
+				motorA2 = pin2;
+				pins.analogSetPeriod(motorA1, pwmPeriod); // 1KHz
+				break
+            case Motors.MotorB:
+				pins.analogSetPeriod(motorB1, pwmPeriod); // 1KHz
+				motorB1 = pin1;
+				motorB2 = pin2;
                 break
         }
     }

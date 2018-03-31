@@ -9,7 +9,9 @@
     "files": [
         "README.md",
         "ns.ts",
-        "motors.ts"
+        "motors.ts",
+		"encoder.ts",
+		"steering.ts"
     ],
     "testFiles": [
         "tests.ts"
