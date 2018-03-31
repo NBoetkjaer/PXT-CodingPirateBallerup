@@ -3,15 +3,18 @@ namespace CodingPirates {
 	let CommandRunning = false;
 	// PID Regulator variables.
 	let P = 5;
-	let I = 2;
+	let I = 5;
 	let D = 0;
-	let LoopFrequency = 50; // Hz
+	// P Regulator for differential steering.
+	let P_diff = 50;
 	
+	const LoopFrequency = 50; // Hz
+	let DeltaT = 1000/LoopFrequency; // Control loop delay in milliseconds.	
 	/**
      * Configure PID regulator used for steering.
      * @param _p the propotional gain eg.: 5
-     * @param _i the integral gain eg.: 0
-	 * @param _d the differential gain eg.: 2
+     * @param _i the integral gain eg.: 5
+	 * @param _d the differential gain eg.: 1
      */
     //% subcategory=Steering
     //% blockId=cp_steering_PID_configuration
@@ -88,6 +91,15 @@ namespace CodingPirates {
 		CommandRunning = false;
 	}
 	
+	/**
+     * Return true if steering command is active otherwise false. 
+     */
+    //% subcategory=Steering
+    //% blockId=cp_steering_command_running
+    //% block="Is steering command running"
+    export function commandIsRunning(): boolean {
+		return CommandRunning;
+	}
 	function runCommand(encGoal: number, dirA: MotorDirection, dirB: MotorDirection):void {
 		if(encGoal == 0 || CommandRunning == true){
 			return;
@@ -114,21 +126,22 @@ namespace CodingPirates {
 			integralErr	= Math.clamp(integralLimit, integralLimit, integralErr + err);
 			let avgPwm = P * err + I * integralErr + D * (prevErr - err);
 			prevErr = err;
-			// If encA and encB differs we should be steering. (Use a P regulator for steering.)
-			let diffPwm = P * (encA - encB);
+			// If encA and encB differs we should be steering. (Use a P regulator for differential steering.)
+			let diffPwm = P_diff * (encA - encB);
+			// Find resulting output signals.
 			if(diffPwm > 0){
-				pwmB = Math.clamp(0,1203, pwmA - diffPwm); // encA > encB ~ pwmB should be larger.
-				pwmA = pwmB + diffPwm;
+				pwmB = Math.clamp(0, 1023, avgPwm + diffPwm); // encA > encB ~ pwmB should be larger.
+				pwmA = pwmB - diffPwm;
 			} else {
-				pwmA = Math.clamp(0,1203, pwmA + diffPwm); // encA < encB ~ pwmA should be larger
-				pwmB = pwmA - diffPwm;
+				pwmA = Math.clamp(0, 1023, avgPwm - diffPwm); // encA < encB ~ pwmA should be larger
+				pwmB = pwmA + diffPwm;
 			}
 				
 			// Apply motor control signal.
 			_motorOn(Motors.MotorA, dirA, pwmA);
 			_motorOn(Motors.MotorB, dirB, pwmB);
 			done = (encA > encGoal) && (encB > encGoal);
-			basic.pause(20)
+			basic.pause(DeltaT)
 		}
 		// Stop the motors.
 		motorOff(Motors.MotorA);
