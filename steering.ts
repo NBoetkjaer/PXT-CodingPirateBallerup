@@ -113,6 +113,7 @@ namespace CodingPirates {
 		let prevErr = 0;
 		let integralErr = 0;
 		const integralLimit = 100;
+		let maxPower = 1023;
 		while(done == false && CommandRunning== true){
 			let encA = encoderACount();
 			let encB = encoderBCount();
@@ -121,19 +122,27 @@ namespace CodingPirates {
 			let err = (2 * encGoal - (encA + encB))/ 2; // Error term.
 			if(err < 0){
 				integralErr = 0; // On overshoot - reset the integral error.
-			}
-			
+			}			
 			integralErr	= Math.clamp(integralLimit, integralLimit, integralErr + err);
 			let avgPwm = P * err + I * integralErr + D * (prevErr - err);
 			prevErr = err;
+			
+			// Hack - to make a ramp acceleration.
+			if(err < 15 || err > (encGoal - 15)){
+				let dist = Math.min(err, encGoal - err); // dist [0:15]
+				maxPower = 400 + dist * 30;
+			} else {
+				maxPower = 1024;
+			}
+			
 			// If encA and encB differs we should be steering. (Use a P regulator for differential steering.)
 			let diffPwm = P_diff * (encA - encB);
 			// Find resulting output signals.
 			if(diffPwm > 0){
-				pwmB = Math.clamp(0, 1023, avgPwm + diffPwm); // encA > encB ~ pwmB should be larger.
+				pwmB = Math.clamp(0, maxPower, avgPwm + diffPwm); // encA > encB ~ pwmB should be larger.
 				pwmA = pwmB - diffPwm;
 			} else {
-				pwmA = Math.clamp(0, 1023, avgPwm - diffPwm); // encA < encB ~ pwmA should be larger
+				pwmA = Math.clamp(0, maxPower, avgPwm - diffPwm); // encA < encB ~ pwmA should be larger
 				pwmB = pwmA + diffPwm;
 			}
 				
