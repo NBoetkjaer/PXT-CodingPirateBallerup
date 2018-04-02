@@ -10,6 +10,9 @@ namespace CodingPirates {
 	let motorB1 = AnalogPin.P12;
 	let motorB2 = DigitalPin.P8;
 	
+	let IsPwmPeriodInitialized = false;
+	const PWM_Period = 1000; // 1000 usec ~ 1kHz
+	
     /*Note that Forward and reverse are slightly arbitrary, as it depends on how the motor is wired...*/
     export enum MotorDirection {
         //% block="forward"
@@ -35,17 +38,24 @@ namespace CodingPirates {
 	 * @param power how much power to send to the motor eg: 75
      */
     //% subcategory=MotorDriver
+	//% weight=100
     //% blockId=cp_motordriver_motor_on
     //% block="Run %motor|in direction %dir|with power %power"
     //% power.min=0 power.max=100
     export function motorOn(motor: Motors, dir: MotorDirection, power: number): void {
-        /*Map 0-100 to 0-1024*/
+        /*Map 0-100 to 0-1023*/
         let pwmVal = (Math.clamp(0, 100, power) * 1023)/100;
 		pwmVal = Math.clamp(0, 1023, pwmVal);
 		_motorOn(motor, dir, pwmVal);
     }
 	
 	export function _motorOn(motor: Motors, dir: MotorDirection, pwmVal: number): void {
+		if(!IsPwmPeriodInitialized)
+		{	// Initialize PWM frequency of both motors.
+			SetPwmPeriod(Motors.MotorA, PWM_Period);
+			SetPwmPeriod(Motors.MotorB, PWM_Period);
+			IsPwmPeriodInitialized = true;
+		}
 		pwmVal = Math.clamp(0, 1023, pwmVal);
 		if(dir == MotorDirection.Reverse)
 		{
@@ -68,6 +78,7 @@ namespace CodingPirates {
      * @param motor :which motor to turn off
      */
     //% subcategory=MotorDriver
+	//% weight=90
     //% blockId=cp_motordriver_motor_off
     //% block="turn off %motor"
     export function motorOff(motor: Motors): void {
@@ -75,11 +86,11 @@ namespace CodingPirates {
             case Motors.MotorA:
                 pins.analogWritePin(motorA1, 0);
                 pins.digitalWritePin(motorA2, 0);
-                break
+                break;
             case Motors.MotorB:
                 pins.analogWritePin(motorB1, 0);
                 pins.digitalWritePin(motorB2, 0);
-                break
+                break;
         }
     }
 	
@@ -90,21 +101,31 @@ namespace CodingPirates {
      * @param pin2 the digital pin used for directions eg:DigitalPin.P16
      */
     //% subcategory=MotorDriver
+	//% weight=80
     //% blockId=cp_motordriver_configuration
     //% block="Configure %motor | pin1 %pin1 |pin2 %pin2" 
     export function motorConfiguation(motor: Motors, pin1: AnalogPin, pin2: DigitalPin): void {
-		const pwmPeriod = 1000; // 1000 usec ~ 1kHz
         switch (motor) {
             case Motors.MotorA:
 				motorA1 = pin1;
 				motorA2 = pin2;
-				pins.analogSetPeriod(motorA1, pwmPeriod); // 1KHz
-				break
+				break;
             case Motors.MotorB:
-				pins.analogSetPeriod(motorB1, pwmPeriod); // 1KHz
 				motorB1 = pin1;
 				motorB2 = pin2;
-                break
+                break;
         }
     }
+	
+	function SetPwmPeriod(motor: Motors, pwmPeriod: number)
+	{
+		switch (motor) {
+            case Motors.MotorA:
+				pins.analogSetPeriod(motorA1, pwmPeriod); // 1KHz
+				break;
+            case Motors.MotorB:
+				pins.analogSetPeriod(motorB1, pwmPeriod); // 1KHz
+                break;
+        }
+	}
 }

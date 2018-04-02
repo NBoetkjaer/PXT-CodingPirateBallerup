@@ -1,36 +1,33 @@
 namespace CodingPirates {
 	
+	export enum Side {
+        //%blockId=cp_steering_left
+        //% block="left"
+        Left,
+        //%blockId=cp_steering_right
+        //% block="right"
+        Right
+    }
+	
 	let CommandRunning = false;
 	// PID Regulator variables.
 	let P = 4;
 	let I = 5;
 	let D = 0;
 	// P Regulator for differential steering.
-	let P_diff = 80;
+	let P_diff = 100;
 	
 	const LoopFrequency = 50; // Hz
 	let DeltaT = 1000/LoopFrequency; // Control loop delay in milliseconds.	
-	/**
-     * Configure PID regulator used for steering.
-     * @param _p the propotional gain eg.: 4
-     * @param _i the integral gain eg.: 5
-	 * @param _d the differential gain eg.: 0
-     */
-    //% subcategory=Steering
-    //% blockId=cp_steering_PID_configuration
-    //% block="Set PID controller P %_p| I %_i | D %_d" 
-    export function SetPID_Controller(_p: number, _i: number, _d: number): void {
-		P = _p;
-		I = _i;
-		D = _d;
-	}
+
 	/**
      * Drive forward by the specified amount. If another command is already running the forward command is discarded.
 	 * @param distance distance to drive forward in centimeters eg.: 25
      */
     //% subcategory=Steering
+	//% weight=100
     //% blockId=cp_steering_forward
-    //% block="Drive forward %distance |centimeters"
+    //% block="drive forward %distance |centimeters"
     export function forward(distance: number):void {
 		let encStopPos = Math.abs(distance * 10); // Convert centimeters to millimeter.
 		let direction = MotorDirection.Forward;
@@ -45,8 +42,9 @@ namespace CodingPirates {
 	 * @param distance distance to drive backwards in centimeters eg.: 25
      */
     //% subcategory=Steering
+	//% weight=90
     //% blockId=cp_steering_backward
-    //% block="Drive backward %distance |centimeters"
+    //% block="drive backward %distance |centimeters"
     export function backward(distance: number):void {
 		forward(-1*distance);
 	}
@@ -56,8 +54,9 @@ namespace CodingPirates {
 	 * @param angle in degree eg.: 90
      */
     //% subcategory=Steering
+	//% weight=80
     //% blockId=cp_steering_turn_right
-    //% block="Turn right  %angle |degrees"
+    //% block="turn right  %angle |degrees"
     export function turnRight(angle: number):void {
 		// Distance between wheels is 155 mm;
 		// Circle circumference is pi*155 = 487 which corresponds to 360 degrees.
@@ -77,16 +76,59 @@ namespace CodingPirates {
 	 * @param angle in degree eg.: 90
      */
     //% subcategory=Steering
+	//% weight=70
     //% blockId=cp_steering_turn_left
-    //% block="Turn left  %angle |degrees"
+    //% block="turn left  %angle |degrees"
     export function turnLeft(angle: number):void {
 		turnRight(-1*angle);
-	}	
+	}
+	
+	/**
+     * Follows a wall, by using the measured analog value as a distance measure.
+	 * It is assumed that the measured distance is perpendicular to the vehicle at either right or left side.
+	 * The command will run until the traveled distance is equal to 'travelDist' or the command is aborted.
+	 * If another command is already running the followWall command is discarded.
+	 * @param side eg.: Side.Left
+	 * @param travelDist_cm the distance to travel in centimeter eg.: 50
+	 * @param distancePin eg.: AnalogPin.P1
+     */
+    //% subcategory=Steering
+	//% weight=65
+    //% blockId=cp_steering_follow_wall
+    //% block="follow %side | wall for %travelDist_cm | cm, measure at pin %distancePin| "
+    export function followWall(side: Side, travelDist_cm: number, distancePin: AnalogPin):void {
+		if(travelDist_cm == 0 || CommandRunning == true){
+			return;
+		}
+		CommandRunning = true;
+		let setPoint = pins.analogReadPin(distancePin);
+		resetEncoders();
+		let done = false;
+		while(done == false && CommandRunning== true){
+			let distance = pins.analogReadPin(distancePin);
+			let err = (setPoint - distance)/2; // Gain is 0.5
+			if(side == Side.Left){				
+				err *= -1;
+			}
+			let powerA = Math.clamp(0, 100, 50 + err);
+			let powerB = Math.clamp(0, 100, 50 - err);
+			
+			motorOn(CodingPirates.Motors.MotorA, CodingPirates.MotorDirection.Forward, powerA);
+			motorOn(CodingPirates.Motors.MotorB, CodingPirates.MotorDirection.Forward, powerB);
+			done = (((encoderAMillimeter() + encoderBMillimeter())/20) >= travelDist_cm);
+			basic.pause(DeltaT)				
+		}
+		// Stop the motors.
+		motorOff(Motors.MotorA);
+		motorOff(Motors.MotorB);
+		CommandRunning = false;		
+	}
 	
 	/**
      * Abort any running steering command. 
      */
     //% subcategory=Steering
+	//% weight=60
     //% blockId=cp_steering_abort_command
     //% block="Abort steering command"
     export function abortCommand():void {
@@ -97,10 +139,27 @@ namespace CodingPirates {
      * Return true if steering command is active otherwise false. 
      */
     //% subcategory=Steering
+	//% weight=50
     //% blockId=cp_steering_command_running
     //% block="Is steering command running"
     export function commandIsRunning(): boolean {
 		return CommandRunning;
+	}
+
+	/**
+     * Configure PID regulator used for steering.
+     * @param _p the propotional gain eg.: 4
+     * @param _i the integral gain eg.: 5
+	 * @param _d the differential gain eg.: 0
+     */
+    //% subcategory=Steering
+	//% weight=40
+    //% blockId=cp_steering_PID_configuration
+    //% block="Set PID controller P %_p| I %_i | D %_d" 
+    export function SetPID_Controller(_p: number, _i: number, _d: number): void {
+		P = _p;
+		I = _i;
+		D = _d;
 	}
 	
 	function runCommand(encGoal_mm: number, dirA: MotorDirection, dirB: MotorDirection):void {
@@ -124,7 +183,7 @@ namespace CodingPirates {
 			// PID regulator.
 			let err = (2 * encGoal_mm - (encA + encB))/ 2; // Error term.
 			if(err < 0){
-				integralErr = 0; // On overshoot - reset the integral error.
+				integralErr = 0; // On overshoot - reset the integral error. (will never happen, since loop is exited)
 			}			
 			integralErr	= Math.clamp(integralLimit, integralLimit, integralErr + err);
 			let avgPwm = P * err + I * integralErr + D * (prevErr - err);
@@ -139,7 +198,7 @@ namespace CodingPirates {
 			}
 			
 			// If encA and encB differs we should be steering. (Use a P regulator for differential steering.)
-			let diffErr = encA - encB 
+			let diffErr = encA - encB;
 			let diffPwm = P_diff * (diffErr);
 	
 			// Find resulting output signals.
@@ -154,7 +213,7 @@ namespace CodingPirates {
 			// Apply motor control signal.
 			_motorOn(Motors.MotorA, dirA, pwmA);
 			_motorOn(Motors.MotorB, dirB, pwmB);
-			done = (encA > encGoal_mm) && (encB > encGoal_mm);
+			done = (encA >= encGoal_mm) && (encB >= encGoal_mm);
 			basic.pause(DeltaT)
 		}
 		// Stop the motors.
