@@ -4,9 +4,14 @@ namespace CodingPirates {
 	let encoderB = DigitalPin.P20;
 	let counterA = 0;
 	let counterB = 0;
+	let totalCounterA = 0;
+	let totalCounterB = 0;
 	
 	let encoderStarted = false;
 	
+	// Calibration of wheel differenses.
+	let APulsesPerMeter = 464;
+	let BPulsesPerMeter = 464;
 	
 	/**
      * Start listning to encoders 
@@ -23,16 +28,20 @@ namespace CodingPirates {
         // Encoder A
 		pins.onPulsed(encoderA, PulseValue.High, () => {
 			counterA++;
+			totalCounterA++;
         })
 		pins.onPulsed(encoderA, PulseValue.Low, () => {
 			counterA++;
+			totalCounterA++
         })
 		// Encoder B
 		pins.onPulsed(encoderB, PulseValue.High, () => {
 			counterB++;
+			totalCounterB++;
         })
 		pins.onPulsed(encoderB, PulseValue.Low, () => {
 			counterB++;
+			totalCounterB++;
         })
 		
         // only init once
@@ -53,6 +62,18 @@ namespace CodingPirates {
 	}
 	
 	/**
+     * Calibrate encoders to measure distances.
+     * @param encAPulses number of pulses per meter for encoder A eg: 464
+     * @param encBPulses number of pulses per meter for encoder B eg: 464
+     */
+    //% subcategory=Encoder
+    //% blockId=cp_encoder_calibration
+    //% block="Calibration encoders A %encAPulses| and B %encBPulses |pulses per meter" 
+    export function encoderCalibration(encAPulses: number, encBPulses: number): void {
+		APulsesPerMeter = encAPulses;
+		BPulsesPerMeter = encBPulses;
+	}
+	/**
      * Return the counter value for encoder A.
      */
     //% subcategory=Encoder
@@ -70,6 +91,26 @@ namespace CodingPirates {
     //% block="encoderB counter" 
     export function encoderBCount(): number {
 		return counterB;
+	}
+	
+	/**
+     * Return the traveled distance in millimeter for encoder A.
+     */
+    //% subcategory=Encoder
+    //% blockId=cp_encoder_A_millimeter
+    //% block="encoderA millimeter" 
+    export function encoderAMillimeter(): number {
+		return (counterA * 1000) / APulsesPerMeter ;
+	}
+	
+	/**
+     * Return the traveled distance in millimeter for encoder B.
+     */
+    //% subcategory=Encoder
+    //% blockId=cp_encoder_B_millimeter
+    //% block="encoderB millimeter" 
+    export function encoderBMillimeter(): number {
+		return (counterB * 1000) / BPulsesPerMeter ;
 	}
 	
 	/**
