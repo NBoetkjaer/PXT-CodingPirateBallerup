@@ -130,7 +130,7 @@ namespace CodingPirates {
     //% subcategory=Steering
 	//% weight=60
     //% blockId=cp_steering_abort_command
-    //% block="Abort steering command"
+    //% block="abort steering command"
     export function abortCommand():void {
 		CommandRunning = false;
 	}
@@ -141,7 +141,7 @@ namespace CodingPirates {
     //% subcategory=Steering
 	//% weight=50
     //% blockId=cp_steering_command_running
-    //% block="Is steering command running"
+    //% block="is steering command running"
     export function commandIsRunning(): boolean {
 		return CommandRunning;
 	}
@@ -155,7 +155,7 @@ namespace CodingPirates {
     //% subcategory=Steering
 	//% weight=40
     //% blockId=cp_steering_PID_configuration
-    //% block="Set PID controller P %_p| I %_i | D %_d" 
+    //% block="set PID controller P %_p| I %_i | D %_d" 
     export function SetPID_Controller(_p: number, _i: number, _d: number): void {
 		P = _p;
 		I = _i;

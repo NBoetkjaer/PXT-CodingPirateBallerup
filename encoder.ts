@@ -20,7 +20,7 @@ namespace CodingPirates {
     //% subcategory=Encoder
 	//% weight=100
     //% blockId=cp_encoder_start
-    //% block="Start encoder"	
+    //% block="start encoder"	
     export function startEncoder(): void {
 	
         if (encoderStarted) return;
@@ -115,7 +115,7 @@ namespace CodingPirates {
     //% subcategory=Encoder
 	//% weight=40
     //% blockId=cp_encoder_configuration
-    //% block="Configure encoder pins A %encA| and B %encB" 
+    //% block="configure encoder pins A %encA| and B %encB" 
     export function encoderConfiguation(encA: DigitalPin, encB: DigitalPin): void {
 		encoderA = encA;
 		encoderB = encB;
@@ -129,7 +129,7 @@ namespace CodingPirates {
     //% subcategory=Encoder
 	//% weight=30
     //% blockId=cp_encoder_calibration
-    //% block="Calibrate encoders A %encAPulses| and B %encBPulses |pulses per meter" 
+    //% block="calibrate encoders A %encAPulses| and B %encBPulses |pulses per meter" 
     export function encoderCalibration(encAPulses: number, encBPulses: number): void {
 		APulsesPerMeter = encAPulses;
 		BPulsesPerMeter = encBPulses;

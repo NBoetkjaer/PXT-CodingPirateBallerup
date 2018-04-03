@@ -1,6 +1,6 @@
 {
     "name": "pxt-codingpirate-motor-driver",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Blocks to simplify using Coding Pirates two wheeled robot.",
     "license": "MIT",
     "dependencies": {
@@ -10,8 +10,9 @@
         "README.md",
         "ns.ts",
         "motors.ts",
-		"encoder.ts",
-		"steering.ts"
+        "encoder.ts",
+        "steering.ts",
+        "_locales/da/CodingPirates-strings.json"
     ],
     "testFiles": [
         "tests.ts"

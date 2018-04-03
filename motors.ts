@@ -40,7 +40,7 @@ namespace CodingPirates {
     //% subcategory=MotorDriver
 	//% weight=100
     //% blockId=cp_motordriver_motor_on
-    //% block="Run %motor|in direction %dir|with power %power"
+    //% block="run %motor|in direction %dir|with power %power"
     //% power.min=0 power.max=100
     export function motorOn(motor: Motors, dir: MotorDirection, power: number): void {
         /*Map 0-100 to 0-1023*/
@@ -103,7 +103,7 @@ namespace CodingPirates {
     //% subcategory=MotorDriver
 	//% weight=80
     //% blockId=cp_motordriver_configuration
-    //% block="Configure %motor | pin1 %pin1 |pin2 %pin2" 
+    //% block="configure %motor | pin1 %pin1 |pin2 %pin2" 
     export function motorConfiguation(motor: Motors, pin1: AnalogPin, pin2: DigitalPin): void {
         switch (motor) {
             case Motors.MotorA:
