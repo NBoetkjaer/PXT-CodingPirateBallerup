@@ -11,8 +11,7 @@
         "ns.ts",
         "motors.ts",
         "encoder.ts",
-        "steering.ts",
-        "_locales/da/codingpirates-strings.json"
+        "steering.ts"
     ],
     "testFiles": [
         "tests.ts"

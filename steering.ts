@@ -71,7 +71,7 @@ namespace codingpirates {
 			let temp = dirA;
 			dirA = dirB;
 			dirB = temp;
-		}		
+		}
 		runCommand(encStopPos, dirA, dirB);
 	}
 
