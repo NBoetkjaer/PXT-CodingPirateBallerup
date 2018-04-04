@@ -99,7 +99,7 @@ namespace codingpirates {
     //% weight=67, blockGap=8
     //% blockId=cp_steering_forward_until
     //% block="drive forward until %dist_cm |cm from wall, measure at pin %distancePin"
-    //% dist_cm.min=10 power.max=100
+    //% dist_cm.min=10 dist_cm.max=100
     export function forwardUntil(dist_cm: number, distancePin: AnalogPin):void {
         let currentDistance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
         let dist_mm = Math.clamp(100, 1000, 10 * dist_cm); 
@@ -109,12 +109,12 @@ namespace codingpirates {
 
         control.inBackground(() => {
             forward(10000); // Run forward in a 10 meters long time!!
-        })
+        });
         
         while(currentDistance > dist_mm){
 
             currentDistance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
-            basic.pause(DeltaT)
+            basic.pause(DeltaT);
         }
         
         abortCommand();
