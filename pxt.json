@@ -1,6 +1,6 @@
 {
     "name": "pxt-codingpirate-motor-driver",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Blocks to simplify using Coding Pirates two wheeled robot.",
     "license": "MIT",
     "dependencies": {
