@@ -114,10 +114,11 @@ namespace codingpirates {
         while(currentDistance > dist_mm){
 
             currentDistance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
-            basic.pause(DeltaT)	
+            basic.pause(DeltaT)
         }
         
         abortCommand();
+        basic.pause(3 * DeltaT); // To ensure command is aborted before we leave function.
     }
 
     function convertAnalogToDistance_mm(analogValue: number): number
