@@ -1,4 +1,4 @@
-namespace CodingPirates {
+namespace codingpirates {
 	/************************************************************************************************************************************************
 	* micro:bit motor driver blocks 
 	************************************************************************************************************************************************/
@@ -12,20 +12,25 @@ namespace CodingPirates {
 	
 	let IsPwmPeriodInitialized = false;
 	const PWM_Period = 1000; // 1000 usec ~ 1kHz
-	
-    /*Note that Forward and reverse are slightly arbitrary, as it depends on how the motor is wired...*/
-    export enum MotorDirection {
+
+    /**
+     * Enumeration of drive direction.
+     */
+	export enum MotorDirection {
         //% block="forward"
         Forward,
         //% block="reverse"
         Reverse
     }
 
+	/**
+	* Enumeration of motors.
+	*/
     export enum Motors {
-        //%blockId=cp_motordriver_motor_A
+        //% blockId=cp_motordriver_motor_A
         //% block="motor A"
         MotorA,
-        //%blockId=cp_motordriver_motor_B
+        //% blockId=cp_motordriver_motor_B
         //% block="motor B"
         MotorB
     }
@@ -48,7 +53,7 @@ namespace CodingPirates {
 		pwmVal = Math.clamp(0, 1023, pwmVal);
 		_motorOn(motor, dir, pwmVal);
     }
-	
+
 	export function _motorOn(motor: Motors, dir: MotorDirection, pwmVal: number): void {
 		if(!IsPwmPeriodInitialized)
 		{	// Initialize PWM frequency of both motors.
@@ -72,7 +77,7 @@ namespace CodingPirates {
                 break;
         }
     }
-	
+
 	/**
      * Turns off the motor specified by eMotors
      * @param motor :which motor to turn off

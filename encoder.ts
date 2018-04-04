@@ -1,4 +1,4 @@
-namespace CodingPirates {
+namespace codingpirates {
 	
 	let encoderA = DigitalPin.P19;
 	let encoderB = DigitalPin.P20;
@@ -18,7 +18,7 @@ namespace CodingPirates {
      *
      */	 
     //% subcategory=Encoder
-	//% weight=100
+	//% weight=55
     //% blockId=cp_encoder_start
     //% block="start encoder"	
     export function startEncoder(): void {
@@ -54,7 +54,7 @@ namespace CodingPirates {
      * Return the counter value for encoder A.
      */
     //% subcategory=Encoder
-	//% weight=90, blockGap=14
+	//% weight=90, blockGap=8
     //% blockId=cp_encoder_A_Count
     //% block="encoderA counter" 
     export function encoderACount(): number {
@@ -76,7 +76,7 @@ namespace CodingPirates {
      * Return the counter value for encoder B.
      */
     //% subcategory=Encoder
-	//% weight=70, blockGap=14
+	//% weight=70, blockGap=8
     //% blockId=cp_encoder_B_Count
     //% block="encoderB counter" 
     export function encoderBCount(): number {
