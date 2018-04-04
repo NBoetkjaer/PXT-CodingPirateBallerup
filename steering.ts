@@ -35,7 +35,7 @@ namespace codingpirates {
     export function forward(distance_cm: number):void {
         let encStopPos = Math.abs(distance_cm * 10); // Convert centimeters to millimeter.
         let direction = MotorDirection.Forward;
-        if(distance < 0){
+        if (distance_cm < 0){
             direction = MotorDirection.Reverse;
         }		
         runCommand(encStopPos, direction, direction);
