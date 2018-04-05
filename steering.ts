@@ -110,15 +110,16 @@ namespace codingpirates {
         control.inBackground(() => {
             forward(10000); // Run forward in a 10 meters long time!!
         });
-        
-        while(currentDistance > dist_mm){
+
+        basic.pause(DeltaT); // Wait until background task is up an running and CommandRunning is true.
+        while (currentDistance > dist_mm && CommandRunning == true){
 
             currentDistance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
             basic.pause(DeltaT);
         }
         
         abortCommand();
-        basic.pause(3 * DeltaT); // To ensure command is aborted before we leave function.
+        basic.pause(3 * DeltaT); // To ensure command is completely aborted before we leave function.
     }
 
     function convertAnalogToDistance_mm(analogValue: number): number
