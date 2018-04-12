@@ -122,9 +122,25 @@ namespace codingpirates {
         basic.pause(3 * DeltaT); // To ensure command is completely aborted before we leave function.
     }
 
-    function convertAnalogToDistance_mm(analogValue: number): number
+    /**
+     * Converts a measured analog value to millimeters.
+     * @param analogValue the measured analog value from the distance sensor
+    */
+    //% subcategory=Steering
+    //% weight=63, blockGap=8
+    //% blockId=cp_steering_convert_to_mm
+    //% block="convert measurement to mm %analogValue"
+    export function convertAnalogToDistance_mm(analogValue: number): number
     {
-        return 10000000/(135 * analogValue - 4500);
+        // https://www.phidgets.com/?tier=3&catid=5&pcid=3&prodid=395
+        // distance_cm = 4800/(Vout*200 - 20); Vout = analogValue * 3.3 / 1023
+        // 4800 / (200 * analogValue * 3.3/ 1023 - 20)
+        // 4800000 / ( analogValue * 645.16 - 20000)
+
+        if (analogValue < 68) // ~approx 2000 mm
+            return 2000; // Clamp to 2 meters
+        else
+            return 48000000 / (645 * analogValue - 20000);
     }
     
     /**
@@ -145,17 +161,23 @@ namespace codingpirates {
             return;
         }
         CommandRunning = true;
-        let setPoint = pins.analogReadPin(distancePin);
+        let setPoint = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
         resetEncoders();
         let done = false;
+        let errAvg = 0;
         while(done == false && CommandRunning== true){
-            let distance = pins.analogReadPin(distancePin);
-            let err = (setPoint - distance)/2; // Gain is 0.5
-            if(side == Side.Left){
+            let distance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
+            let err = (setPoint - distance);
+            // Average is a 1.order FIR filter with forgetting factor 4.
+            errAvg = (3 * errAvg + 100 * err) / 4; // errAvg is scaled with a factor 100.
+
+            err = Math.clamp(-40, 40, errAvg / 100);
+            if (side == Side.Left) {
                 err *= -1;
             }
-            let powerA = Math.clamp(0, 100, 50 + err);
-            let powerB = Math.clamp(0, 100, 50 - err);
+
+            let powerA = Math.clamp(0, 100, 60 - err);
+            let powerB = Math.clamp(0, 100, 60 + err);
             
             motorOn(Motors.MotorA, MotorDirection.Forward, powerA);
             motorOn(Motors.MotorB, MotorDirection.Forward, powerB);
