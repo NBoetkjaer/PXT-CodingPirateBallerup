@@ -112,7 +112,7 @@ namespace codingpirates {
         });
 
         basic.pause(DeltaT); // Wait until background task is up an running and CommandRunning is true.
-        while( (currentDistance > dist_mm) && (CommandRunning == true) ){
+        while( (currentDistance > dist_mm) && commandIsRunning() ){
             currentDistance = convertAnalogToDistance_mm(pins.analogReadPin(distancePin));
             basic.pause(DeltaT);
         }
